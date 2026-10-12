@@ -1,6 +1,8 @@
-# @erickwendel/ciphersuite-mcp
+# mcp-chypher
 
-An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that provides AES-256-CBC encryption and decryption tools, a resource describing the algorithm, and ready-to-use prompts — all runnable directly inside VS Code Copilot Chat.
+A learning project to explore the **Model Context Protocol (MCP)** by building a simple encryption/decryption MCP server.
+
+This project was created to understand how MCP servers work — including tools, resources, and prompts — using the official `@modelcontextprotocol/sdk`.
 
 ---
 
@@ -8,11 +10,10 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that p
 
 | Capability | Name | Description |
 |---|---|---|
-| 🔧 Tool | `encrypt_message` | Encrypts any plain-text message with a passphrase |
+| 🔧 Tool | `encrypt_message` | Encrypts a plain-text message with a passphrase |
 | 🔧 Tool | `decrypt_message` | Decrypts a previously encrypted message with the same passphrase |
 | 📄 Resource | `encryption://info` | Returns details about the algorithm, key derivation, and output format |
 | 💬 Prompt | `encrypt_message_prompt` | Pre-built prompt that asks the agent to encrypt a message |
-| 💬 Prompt | `decrypt_message_prompt` | Pre-built prompt that asks the agent to decrypt a message |
 
 ### How encryption works
 
@@ -35,7 +36,7 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that p
 npm install
 ```
 
-No build step is needed — the server runs TypeScript directly via Node.js native TypeScript support.
+No build step is needed — the server runs TypeScript directly via Node.js native TypeScript support (`--experimental-strip-types`).
 
 ---
 
@@ -48,21 +49,9 @@ Create (or open) `.vscode/mcp.json` in your workspace and add:
 ```json
 {
   "servers": {
-    "ciphersuite-mcp": {
+    "mcp-chypher": {
       "command": "node",
       "args": ["--experimental-strip-types", "ABSOLUTE_PATH_TO_PROJECT/src/index.ts"]
-    }
-  }
-}
-```
-
-or via npm
-```json
-{
-  "servers": {
-    "ciphersuite-mcp": {
-      "command": "npx",
-      "args": ["-y", "@erickwendel/ciphersuite-mcp"]
     }
   }
 }
@@ -117,11 +106,10 @@ npm run test:dev
 ```
 
 The test suite covers:
-
 - Encrypting a message
 - Decrypting a message with the correct passphrase
 - Listing and reading the `encryption://info` resource
-- Fetching both prompts
+- Fetching the `encrypt_message_prompt`
 - Error: decrypting with the wrong passphrase
 - Error: decrypting a malformed ciphertext
 
@@ -131,10 +119,12 @@ The test suite covers:
 
 ```
 src/
-  index.ts   # Entry point — connects the server to stdio transport
-  mcp.ts     # All tools, resources, and prompts are registered here
+  index.ts    # Entry point — connects the server to stdio transport
+  mcp.ts      # All tools, resources, and prompts are registered here
+  service.ts  # Encryption/decryption logic using Node.js crypto
 tests/
-  mcp.test.ts
+  mcp.test.ts # Integration tests using the MCP SDK test client
+  helpers.ts  # Test helper to create a test client
 ```
 
 ---
@@ -148,3 +138,22 @@ tests/
 | `npm test` | Run all tests |
 | `npm run test:dev` | Run tests in watch mode |
 | `npm run mcp:inspect` | Open the MCP Inspector UI |
+
+---
+
+## Learning goals
+
+This project demonstrates:
+
+1. **MCP Server setup** — Creating an `McpServer` instance and connecting via `StdioServerTransport`
+2. **Tools** — Registering tools with input/output schemas using Zod
+3. **Resources** — Exposing static/dynamic resources via URI schemes
+4. **Prompts** — Creating reusable prompt templates with argument schemas
+5. **Testing** — Using the MCP SDK's test client for integration tests
+6. **TypeScript** — Running TS directly in Node.js without a build step
+
+---
+
+## License
+
+ISC
