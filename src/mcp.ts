@@ -1,7 +1,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod/v3';
-import { encrypt } from './service.ts';
+import { decrypt, encrypt } from './service.ts';
 
 export const server = new McpServer({
     name: '@igornfaustino/chypher',
@@ -35,6 +35,38 @@ server.registerTool('encrypt_message', {
             content: [{
                 type: 'text',
                 text: `failed to encrypt message: ${error instanceof Error ? error.message : String(error)}`,
+            }]
+        };
+    }
+});
+
+server.registerTool('decrypt_message', {
+    description: 'Decrypts a message using a given key.',
+    inputSchema: {
+        encryptedMessage: z.string().describe('The encrypted message to be decrypted.'),
+        encryptionKey: z.string().describe('The key used for decryption.'),
+    },
+    outputSchema: {
+        decryptedMessage: z.string().describe('The decrypted message.'),
+    }
+}, async ({ encryptedMessage, encryptionKey }) => {
+    try {
+        const message = await decrypt(encryptedMessage, encryptionKey);
+        return {
+            content: [{
+                type: 'text',
+                text: message,
+            }],
+            structuredContent: {
+                decryptedMessage: message,
+            }
+        };
+    } catch (error) {
+        return {
+            isError: true,
+            content: [{
+                type: 'text',
+                text: `failed to decrypt message: ${error instanceof Error ? error.message : String(error)}`,
             }]
         };
     }
